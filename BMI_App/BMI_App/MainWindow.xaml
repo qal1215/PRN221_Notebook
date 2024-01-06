@@ -24,7 +24,7 @@
         <Button Content="Calculate" HorizontalAlignment="Center" Margin="0,100,0,0" VerticalAlignment="Top" Height="21" Width="62" Click="Button_Click" Background="#FF3A66AE" Grid.Column="1"/>
         <Button Content="Clear" HorizontalAlignment="Left" Margin="120,100,0,0" VerticalAlignment="Top" Height="21" Width="61" Click="Button_Click_1" Background="#FF3A66AE" Grid.Column="1" Grid.ColumnSpan="2"/>
         <Label Content="BMI" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Center" RenderTransformOrigin="-1.392,-1.043" Width="64" Grid.ColumnSpan="2"/>
-        <Label x:Name="lbBMI" HorizontalContentAlignment="Center" Margin="53,0,45,0" VerticalAlignment="Center" RenderTransformOrigin="-1.392,-1.043" Width="68" Visibility="Hidden" Grid.Column="1" />
+        <Label x:Name="lbBMI" HorizontalAlignment="Center" HorizontalContentAlignment="Center" Margin="53,0,45,0" VerticalAlignment="Center" RenderTransformOrigin="-1.392,-1.043" Width="68" Visibility="Hidden" Grid.Column="1" />
         <Label Content="Status" HorizontalAlignment="Left" Margin="10,178,0,0" VerticalAlignment="Top" RenderTransformOrigin="-1.392,-1.043" Width="78" Grid.ColumnSpan="2"/>
         <Label x:Name="lbStatus" Content="Normal" HorizontalAlignment="Left" Margin="53,175,0,0" VerticalAlignment="Top" RenderTransformOrigin="-1.392,-1.043" FontWeight="UltraBold" FontSize="16" Visibility="Hidden" Grid.Column="1"/>
         <Label Content="BMI Calculator" HorizontalContentAlignment="Center" Margin="71,12,102,0" VerticalAlignment="Top" Width="128" Grid.ColumnSpan="3" Grid.Column="1"/>
