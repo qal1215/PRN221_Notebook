@@ -13,6 +13,7 @@ namespace CloneWindowsBrowser
         private static ICollection<string> files = new List<string>();
         private static ICollection<DirectoryMetaData> directoryMetaData = new List<DirectoryMetaData>();
 
+        private static string selectedFolderPath = string.Empty;
 
         public MainWindow()
         {
@@ -36,6 +37,9 @@ namespace CloneWindowsBrowser
 
         private void LoadData(string path)
         {
+            directories.Clear();
+            files.Clear();
+            directoryMetaData.Clear();
             directories = DirectoriesLookUp(path);
             files = FilesLookUp(path);
 
@@ -43,7 +47,7 @@ namespace CloneWindowsBrowser
             {
                 directoryMetaData.Add(new DirectoryMetaData
                 {
-                    Type = "Folder",
+                    Type = "📁",
                     Name = Path.GetFileName(directory),
                     Path = directory
                 });
@@ -53,18 +57,24 @@ namespace CloneWindowsBrowser
             {
                 directoryMetaData.Add(new DirectoryMetaData
                 {
-                    Type = "File",
+                    Type = "🗄️",
                     Name = Path.GetFileName(file),
                     Path = file
                 });
             }
 
+            this.lvDicrector.ItemsSource = null;
             this.lvDicrector.ItemsSource = directoryMetaData;
         }
 
         private static ICollection<string> DirectoriesLookUp(string path)
         {
             List<string> directories = new List<string>();
+
+            if (Directory.GetDirectories(path).Length <= 0)
+            {
+                return directories;
+            }
 
             foreach (var directory in Directory.GetDirectories(path))
             {
@@ -77,6 +87,11 @@ namespace CloneWindowsBrowser
         {
             List<string> files = new List<string>();
 
+            if (Directory.GetFiles(path).Length <= 0)
+            {
+                return files;
+            }
+
             foreach (var file in Directory.GetFiles(path))
             {
                 files.Add(file);
@@ -87,15 +102,14 @@ namespace CloneWindowsBrowser
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
             var path = this.txtFolderPath.Text;
-            string folderPath = path + "\\New Folder";
 
-            CreateNewFolder(folderPath);
+            CreateNewFolder(path);
             LoadData(path);
         }
 
         private void CreateNewFolder(string path, int i = 0)
         {
-            string folderPath = path + "\\New Folder";
+            string folderPath = path + "\\New Folder ";
             if (i > 0)
             {
                 folderPath += $" ({i})";
@@ -110,7 +124,52 @@ namespace CloneWindowsBrowser
                 CreateNewFolder(path, ++i);
             }
         }
+
+        private void Button_Click_2(object sender, RoutedEventArgs e)
+        {
+            var path = selectedFolderPath;
+
+            TriggerDeleteFolder(path);
+            LoadData(this.txtFolderPath.Text);
+        }
+
+        private void TriggerDeleteFolder(string path)
+        {
+            if (IsEmptyFolder(path))
+            {
+                MessageBoxResult result = System.Windows.MessageBox.Show("You are sure about that?");
+                if (result == MessageBoxResult.OK)
+                {
+                    DeleteFolder(path);
+                }
+            }
+            else
+            {
+                MessageBoxResult result = System.Windows.MessageBox.Show("Folder is not empty, you are sure about that?");
+                if (result == MessageBoxResult.OK)
+                {
+                    DeleteFolder(path);
+                }
+            }
+        }
+
+        private void DeleteFolder(string path)
+        {
+            Directory.Delete(path);
+        }
+
+        private bool IsEmptyFolder(string path)
+        {
+            return Directory.GetFiles(path).Length == 0 && Directory.GetDirectories(path).Length == 0;
+        }
+
+        private void lvDicrector_Selected(object sender, RoutedEventArgs e)
+        {
+            var item = (DirectoryMetaData)this.lvDicrector.SelectedItem;
+            if (item != null)
+            {
+                selectedFolderPath = item.Path;
+            }
+        }
     }
-
-
 }

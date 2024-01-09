@@ -10,7 +10,7 @@
         <Label Content="Folder Name" HorizontalAlignment="Left" Margin="52,38,0,0" VerticalAlignment="Top" Width="130" Height="40" FontSize="20"/>
         <TextBox x:Name="txtFolderPath" HorizontalAlignment="Left" Margin="204,49,0,0" TextWrapping="WrapWithOverflow" Text="Path" VerticalAlignment="Top" Width="476" FontSize="14" MaxLines="1" IsReadOnly="True"/>
         <Button Content="Browse File" HorizontalAlignment="Left" Margin="600,91,0,0" VerticalAlignment="Top" Height="26" Width="80" FontSize="14" Click="Button_Click"/>
-        <ListView x:Name="lvDicrector" Margin="10,122,10,10">
+        <ListView x:Name="lvDicrector" Margin="10,122,10,10" SelectionMode="Single" SelectionChanged="lvDicrector_Selected">
             <ListView.View>
                 <GridView AllowsColumnReorder="True">
                     <GridViewColumn Header="Type" Width="60" DisplayMemberBinding="{Binding Type}">
@@ -20,8 +20,8 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <Button Content="New Folder
-                " HorizontalAlignment="Left" Margin="10,95,0,0" VerticalAlignment="Top" Width="68" Click="Button_Click_1"/>
+        <Button Content="New Folder" HorizontalAlignment="Left" Margin="10,95,0,0" VerticalAlignment="Top" Width="68" Click="Button_Click_1"/>
+        <Button Content="Delete Folder" HorizontalAlignment="Left" Margin="83,95,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click_2"/>
 
 
     </Grid>
