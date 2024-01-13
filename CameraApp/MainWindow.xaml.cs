@@ -14,17 +14,19 @@ namespace CameraApp
     {
         private FilterInfoCollection videoDevices;
         private VideoCaptureDevice videoSource;
-        private List<object> listImage;
+        private List<ImageInfo> listImage;
+
+        private object currentImageChoice;
 
         public MainWindow()
         {
             InitializeComponent();
-            listImage = new List<object>();
+            listImage = new List<ImageInfo>();
             lvData.ItemsSource = listImage;
+            Window_Loaded();
         }
 
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private void Window_Loaded()
         {
             textPath.Text = Directory.GetCurrentDirectory();
 
@@ -46,7 +48,7 @@ namespace CameraApp
                 var pathToSave = CreateNewFile(textPath.Text);
                 bitmapImageToBytes(image, pathToSave);
                 System.Windows.MessageBox.Show("Image saved successfully");
-                listImage.Add(new
+                listImage.Add(new ImageInfo
                 {
                     Preview = pathToSave,
                     FileName = Path.GetFileName(pathToSave),
@@ -62,8 +64,34 @@ namespace CameraApp
         {
             Stream writingStream = new FileStream(pathToSave, FileMode.Create);
             var encoder = new JpegBitmapEncoder();
+            Bitmap bitmap = BitmapImage2Bitmap(bitmapImage);
+            BitmapSource bitmapSource = ImageToBitmapSource(resizeImage(bitmap, 100, 100, true));
             encoder.Frames.Add(BitmapFrame.Create(bitmapImage));
             encoder.Save(writingStream);
+        }
+
+        private BitmapSource ImageToBitmapSource(Image image)
+        {
+            var bitmap = new Bitmap(image);
+            var bitSrc = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
+                               bitmap.GetHbitmap(),
+                                              IntPtr.Zero,
+                                                             Int32Rect.Empty,
+                                                                            BitmapSizeOptions.FromEmptyOptions());
+            return bitSrc;
+        }
+
+        private Bitmap BitmapImage2Bitmap(BitmapImage bitmapImage)
+        {
+            using (MemoryStream outStream = new MemoryStream())
+            {
+                BitmapEncoder enc = new BmpBitmapEncoder();
+                enc.Frames.Add(BitmapFrame.Create(bitmapImage));
+                enc.Save(outStream);
+                Bitmap bitmap = new Bitmap(outStream);
+
+                return new Bitmap(bitmap);
+            }
         }
 
         private string CreateNewFile(string path, int i = 0)
@@ -118,6 +146,40 @@ namespace CameraApp
             }
         }
 
+        private Image resizeImage(Bitmap imgToResize, int width, int height, bool keepRatio = false)
+        {
+            if (keepRatio)
+            {
+                int sourceWidth = imgToResize.Width;
+                int sourceHeight = imgToResize.Height;
+
+                float nPercent = 0;
+                float nPercentW = 0;
+                float nPercentH = 0;
+
+                nPercentW = ((float)width / (float)sourceWidth);
+                nPercentH = ((float)height / (float)sourceHeight);
+
+                if (nPercentH < nPercentW)
+                    nPercent = nPercentH;
+                else
+                    nPercent = nPercentW;
+
+                width = (int)(sourceWidth * nPercent);
+                height = (int)(sourceHeight * nPercent);
+            }
+
+            Image img = (Image)imgToResize;
+            Image b = new Bitmap(width, height);
+            Graphics g = Graphics.FromImage(b);
+
+            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+            g.DrawImage(img, 0, 0, width, height);
+            g.Dispose();
+
+            return b;
+        }
+
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             if (videoSource.IsRunning)
@@ -136,6 +198,13 @@ namespace CameraApp
             {
                 textPath.Text = folderBrowserDialog.SelectedPath;
             }
+        }
+
+        private void lvData_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            var item = (ImageInfo)this.lvData.SelectedItem;
+            Window1 window1 = new Window1(item);
+            window1.ShowDialog();
         }
     }
 }

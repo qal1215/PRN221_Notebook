@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using Path = System.IO.Path;
 
@@ -14,6 +15,7 @@ namespace CloneWindowsBrowser
         private static ICollection<DirectoryMetaData> directoryMetaData = new List<DirectoryMetaData>();
 
         private static string selectedFolderPath = string.Empty;
+        private static DirectoryMetaData currentItem = null;
 
         public MainWindow()
         {
@@ -43,13 +45,22 @@ namespace CloneWindowsBrowser
             directories = DirectoriesLookUp(path);
             files = FilesLookUp(path);
 
+            directoryMetaData.Add(new DirectoryMetaData
+            {
+                TypeOf = Type.Back,
+                Type = "...",
+                Name = "",
+                Path = Directory.GetParent(path) != null ? Directory.GetParent(path).FullName : ""
+            });
+
             foreach (var directory in directories)
             {
                 directoryMetaData.Add(new DirectoryMetaData
                 {
                     Type = "📁",
                     Name = Path.GetFileName(directory),
-                    Path = directory
+                    Path = directory,
+                    TypeOf = Type.Directory
                 });
             }
 
@@ -59,7 +70,8 @@ namespace CloneWindowsBrowser
                 {
                     Type = "🗄️",
                     Name = Path.GetFileName(file),
-                    Path = file
+                    Path = file,
+                    TypeOf = Type.File
                 });
             }
 
@@ -128,8 +140,15 @@ namespace CloneWindowsBrowser
         private void Button_Click_2(object sender, RoutedEventArgs e)
         {
             var path = selectedFolderPath;
+            if (Directory.Exists(path))
+            {
+                TriggerDeleteFolder(path);
+            }
+            else if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
 
-            TriggerDeleteFolder(path);
             LoadData(this.txtFolderPath.Text);
         }
 
@@ -168,8 +187,66 @@ namespace CloneWindowsBrowser
             var item = (DirectoryMetaData)this.lvDicrector.SelectedItem;
             if (item != null)
             {
+                currentItem = item;
                 selectedFolderPath = item.Path;
+                var name = "";
+                if (File.Exists(selectedFolderPath))
+                {
+                    name = Path.GetFileNameWithoutExtension(selectedFolderPath);
+                }
+                else if (Directory.Exists(selectedFolderPath))
+                {
+                    name = Path.GetFileName(selectedFolderPath);
+                }
+                textItemName.Text = name;
+            }
+        }
+
+        private void Button_Click_3(object sender, RoutedEventArgs e)
+        {
+            if (File.Exists(selectedFolderPath))
+            {
+                var newName = textItemName.Text;
+                var newPath = Path.GetDirectoryName(selectedFolderPath) + "\\" + newName + Path.GetExtension(selectedFolderPath);
+                File.Move(selectedFolderPath, newPath);
+            }
+            else if (Directory.Exists(selectedFolderPath))
+            {
+                var newName = textItemName.Text;
+                var newPath = Path.GetDirectoryName(selectedFolderPath) + "\\" + newName;
+                Directory.Move(selectedFolderPath, newPath);
+            }
+            LoadData(this.txtFolderPath.Text);
+        }
+
+        private void lvDicrector_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            var item = (DirectoryMetaData)this.lvDicrector.SelectedItem;
+            if (item != null)
+            {
+                if (item.TypeOf == Type.Back)
+                {
+                    txtFolderPath.Text = item.Path;
+                    LoadData(item.Path);
+                }
+                else if (item.TypeOf == Type.File)
+                {
+                    Process.Start("notepad.exe", item.Path);
+                }
+                else if (item.TypeOf == Type.Directory)
+                {
+                    txtFolderPath.Text = item.Path;
+                    LoadData(item.Path);
+                }
             }
         }
     }
+
+    enum Type
+    {
+        Directory,
+        File,
+        Back
+    }
 }
+
