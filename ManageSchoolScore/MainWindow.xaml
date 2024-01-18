@@ -7,6 +7,11 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
+        <ComboBox Name="cbSchoolYear" HorizontalAlignment="Left" Margin="30,27,0,0" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="txtPathFile" HorizontalAlignment="Left" Margin="30,69,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="370"/>
+        <Button Content="Browser File" HorizontalAlignment="Left" Margin="422,68,0,0" VerticalAlignment="Top" Width="80" Click="Button_Click"/>
+        <Button Content="Input" HorizontalAlignment="Left" Margin="30,127,0,0" VerticalAlignment="Top" Height="31" Width="120"/>
+        <Button Content="Clear" HorizontalAlignment="Left" Margin="215,127,0,0" VerticalAlignment="Top" Height="31" Width="120"/>
 
     </Grid>
 </Window>
