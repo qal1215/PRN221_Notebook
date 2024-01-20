@@ -1,7 +1,12 @@
-﻿using Microsoft.Win32;
+﻿using ManageSchoolScore.CsvHelper;
+using ManageSchoolScore.Models;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace ManageSchoolScore
 {
@@ -10,10 +15,16 @@ namespace ManageSchoolScore
     /// </summary>
     public partial class MainWindow : Window
     {
+        DispatcherTimer dispatcherTimer = new DispatcherTimer();
+        Stopwatch stopWatch = new Stopwatch();
+        string currentTime = string.Empty;
 
         public MainWindow()
         {
             InitializeComponent();
+
+            dispatcherTimer.Tick += new EventHandler(dt_Tick);
+            dispatcherTimer.Interval = new TimeSpan(0, 0, 0, 0, 1);
 
             List<int> years = new List<int>();
             years.Add(2017);
@@ -29,6 +40,17 @@ namespace ManageSchoolScore
             this.cbSchoolYear.SelectedItem = years[7];
         }
 
+        void dt_Tick(object sender, EventArgs e)
+        {
+            if (stopWatch.IsRunning)
+            {
+                TimeSpan ts = stopWatch.Elapsed;
+                currentTime = String.Format("{0:00}:{1:00}:{2:00}",
+                ts.Minutes, ts.Seconds, ts.Milliseconds / 10);
+                timer.Content = currentTime;
+            }
+        }
+
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -40,6 +62,26 @@ namespace ManageSchoolScore
             {
                 this.txtPathFile.Text = openFileDialog.FileName;
             }
+        }
+
+        private async void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            stopWatch.Start();
+            dispatcherTimer.Start();
+
+            var filePath = this.txtPathFile.Text;
+            IList<StudentCsv> studentList = CsvHelping.ReaderCsv<StudentCsv>(filePath);
+            ManageSchoolScore.Repository.Repository repo = new Repository.Repository();
+            repo.InternalStore = studentList.ToList();
+            await repo.CommitAsync();
+            stopWatch.Stop();
+
+        }
+
+        private void Button_Click_2(object sender, RoutedEventArgs e)
+        {
+            stopWatch.Reset();
+            timer.Content = "00:00:00";
         }
     }
 }

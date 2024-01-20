@@ -10,8 +10,9 @@
         <ComboBox Name="cbSchoolYear" HorizontalAlignment="Left" Margin="30,27,0,0" VerticalAlignment="Top" Width="120"/>
         <TextBox x:Name="txtPathFile" HorizontalAlignment="Left" Margin="30,69,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="370"/>
         <Button Content="Browser File" HorizontalAlignment="Left" Margin="422,68,0,0" VerticalAlignment="Top" Width="80" Click="Button_Click"/>
-        <Button Content="Input" HorizontalAlignment="Left" Margin="30,127,0,0" VerticalAlignment="Top" Height="31" Width="120"/>
-        <Button Content="Clear" HorizontalAlignment="Left" Margin="215,127,0,0" VerticalAlignment="Top" Height="31" Width="120"/>
+        <Button Content="Input" HorizontalAlignment="Left" Margin="30,127,0,0" VerticalAlignment="Top" Height="31" Width="120" Click="Button_Click_1"/>
+        <Button Content="Clear" HorizontalAlignment="Left" Margin="215,127,0,0" VerticalAlignment="Top" Height="31" Width="120" Click="Button_Click_2"/>
+        <Label Name="timer" Content="00:00:000" HorizontalAlignment="Left" Margin="239,17,0,0" VerticalAlignment="Top" Width="137" FontSize="24"/>
 
     </Grid>
 </Window>
