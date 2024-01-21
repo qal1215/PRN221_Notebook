@@ -34,7 +34,7 @@ namespace ManageSchoolScore
             years.Add(2024);
 
             this.cbSchoolYear.ItemsSource = years;
-            this.cbSchoolYear.SelectedItem = years[1];
+            this.cbSchoolYear.SelectedItem = years[0];
 
             this.txtPathFile.Text = "C:\\Users\\Aka Bom\\Desktop\\2017.csv";
         }

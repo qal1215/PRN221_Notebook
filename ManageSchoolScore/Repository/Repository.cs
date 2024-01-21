@@ -94,7 +94,7 @@ namespace ManageSchoolScore.Repository
                     var data = ParseLineToStudent(line);
                     bulkData.Add(data);
 
-                    if (bulkData.Count >= 50000)
+                    if (bulkData.Count >= 150000)
                     {
                         await ImportStudentScoresAsync(bulkData);
                         bulkData.Clear();
@@ -178,10 +178,13 @@ namespace ManageSchoolScore.Repository
             using (var context = new DBContextMSS())
             {
                 await context.BulkInsertAsync(studentList);
+            }
 
+            int pageIndex = (scoreList.Count / CommitBatchSize) + (scoreList.Count % CommitBatchSize == 0 ? 0 : 1);
+            using (var context = new DBContextMSS())
+            {
                 if (scoreList.Count >= CommitBatchSize)
                 {
-                    int pageIndex = (scoreList.Count / CommitBatchSize) + (scoreList.Count % CommitBatchSize == 0 ? 0 : 1);
                     for (int i = 0; i < pageIndex; i++)
                     {
                         await context.BulkInsertAsync(scoreList
@@ -194,8 +197,6 @@ namespace ManageSchoolScore.Repository
                 {
                     await context.BulkInsertAsync(scoreList);
                 }
-
-
             }
         }
     }
