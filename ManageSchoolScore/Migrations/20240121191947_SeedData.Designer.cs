@@ -4,6 +4,7 @@ using ManageSchoolScore.DatabaseContextMSS;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ManageSchoolScore.Migrations
 {
     [DbContext(typeof(DBContextMSS))]
-    partial class DBContextMSSModelSnapshot : ModelSnapshot
+    [Migration("20240121191947_SeedData")]
+    partial class SeedData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -156,7 +159,7 @@ namespace ManageSchoolScore.Migrations
                     b.ToTable("Students");
                 });
 
-            modelBuilder.Entity("ManageSchoolScore.Models.StudentRaw", b =>
+            modelBuilder.Entity("ManageSchoolScore.Models.StudentCsv", b =>
                 {
                     b.Property<string>("ID")
                         .HasColumnType("nvarchar(450)");
@@ -197,9 +200,6 @@ namespace ManageSchoolScore.Migrations
                     b.Property<string>("Province")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("YearNow")
-                        .HasColumnType("int");
 
                     b.HasKey("ID");
 

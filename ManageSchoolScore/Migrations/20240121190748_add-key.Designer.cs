@@ -4,6 +4,7 @@ using ManageSchoolScore.DatabaseContextMSS;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ManageSchoolScore.Migrations
 {
     [DbContext(typeof(DBContextMSS))]
-    partial class DBContextMSSModelSnapshot : ModelSnapshot
+    [Migration("20240121190748_add-key")]
+    partial class addkey
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -44,64 +47,6 @@ namespace ManageSchoolScore.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("SchoolYears");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1L,
-                            ExamYear = 2017,
-                            Name = "2017",
-                            Status = ""
-                        },
-                        new
-                        {
-                            Id = 2L,
-                            ExamYear = 2018,
-                            Name = "2018",
-                            Status = ""
-                        },
-                        new
-                        {
-                            Id = 3L,
-                            ExamYear = 2019,
-                            Name = "2019",
-                            Status = ""
-                        },
-                        new
-                        {
-                            Id = 4L,
-                            ExamYear = 2020,
-                            Name = "2020",
-                            Status = ""
-                        },
-                        new
-                        {
-                            Id = 5L,
-                            ExamYear = 2021,
-                            Name = "2021",
-                            Status = ""
-                        },
-                        new
-                        {
-                            Id = 6L,
-                            ExamYear = 2022,
-                            Name = "2022",
-                            Status = ""
-                        },
-                        new
-                        {
-                            Id = 7L,
-                            ExamYear = 2023,
-                            Name = "2023",
-                            Status = ""
-                        },
-                        new
-                        {
-                            Id = 8L,
-                            ExamYear = 2024,
-                            Name = "2024",
-                            Status = ""
-                        });
                 });
 
             modelBuilder.Entity("ManageSchoolScore.Models.Score", b =>
@@ -156,7 +101,7 @@ namespace ManageSchoolScore.Migrations
                     b.ToTable("Students");
                 });
 
-            modelBuilder.Entity("ManageSchoolScore.Models.StudentRaw", b =>
+            modelBuilder.Entity("ManageSchoolScore.Models.StudentCsv", b =>
                 {
                     b.Property<string>("ID")
                         .HasColumnType("nvarchar(450)");
@@ -198,9 +143,6 @@ namespace ManageSchoolScore.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("YearNow")
-                        .HasColumnType("int");
-
                     b.HasKey("ID");
 
                     b.ToTable("StudentCsvs");
@@ -225,74 +167,6 @@ namespace ManageSchoolScore.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Subjects");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1L,
-                            Code = "MATH",
-                            Name = "Toán"
-                        },
-                        new
-                        {
-                            Id = 2L,
-                            Code = "LIT",
-                            Name = "Văn"
-                        },
-                        new
-                        {
-                            Id = 3L,
-                            Code = "PHYS",
-                            Name = "Lý"
-                        },
-                        new
-                        {
-                            Id = 4L,
-                            Code = "CHEM",
-                            Name = "Hoá"
-                        },
-                        new
-                        {
-                            Id = 5L,
-                            Code = "BIO",
-                            Name = "Sinh"
-                        },
-                        new
-                        {
-                            Id = 6L,
-                            Code = "CNS",
-                            Name = "Khoa học tự nhiên"
-                        },
-                        new
-                        {
-                            Id = 7L,
-                            Code = "HIST",
-                            Name = "Sử"
-                        },
-                        new
-                        {
-                            Id = 8L,
-                            Code = "GEO",
-                            Name = "Địa"
-                        },
-                        new
-                        {
-                            Id = 9L,
-                            Code = "CIV",
-                            Name = "Giáo dục công dân"
-                        },
-                        new
-                        {
-                            Id = 10L,
-                            Code = "CSS",
-                            Name = "Khoa học xã hội"
-                        },
-                        new
-                        {
-                            Id = 11L,
-                            Code = "ENG",
-                            Name = "English"
-                        });
                 });
 
             modelBuilder.Entity("ManageSchoolScore.Models.Score", b =>

@@ -1,10 +1,7 @@
-﻿using ManageSchoolScore.CsvHelper;
-using ManageSchoolScore.Models;
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Windows;
 using System.Windows.Threading;
 
@@ -37,7 +34,9 @@ namespace ManageSchoolScore
             years.Add(2024);
 
             this.cbSchoolYear.ItemsSource = years;
-            this.cbSchoolYear.SelectedItem = years[7];
+            this.cbSchoolYear.SelectedItem = years[1];
+
+            this.txtPathFile.Text = "C:\\Users\\Aka Bom\\Desktop\\2017.csv";
         }
 
         void dt_Tick(object sender, EventArgs e)
@@ -70,12 +69,9 @@ namespace ManageSchoolScore
             dispatcherTimer.Start();
 
             var filePath = this.txtPathFile.Text;
-            IList<StudentCsv> studentList = CsvHelping.ReaderCsv<StudentCsv>(filePath);
-            ManageSchoolScore.Repository.Repository repo = new Repository.Repository();
-            repo.InternalStore = studentList.ToList();
-            await repo.CommitAsync();
+            var yearNow = (int)this.cbSchoolYear.SelectedItem;
+            await Repository.Repository.CommitAsync(filePath, yearNow);
             stopWatch.Stop();
-
         }
 
         private void Button_Click_2(object sender, RoutedEventArgs e)

@@ -1,8 +1,10 @@
 ﻿using CsvHelper.Configuration.Attributes;
+using System.Collections;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ManageSchoolScore.Models
 {
-    public class StudentCsv
+    public class StudentRaw
     {
         [Index(0)]
         public string ID { get; set; }
@@ -43,7 +45,12 @@ namespace ManageSchoolScore.Models
         [Index(12)]
         public double? English { get; set; } = 0;
 
-        public StudentCsv()
+        public int? YearNow { get; set; }
+
+        [NotMapped]
+        public Hashtable ScoreTable { get; set; } = new Hashtable();
+
+        public StudentRaw()
         {
         }
     }
