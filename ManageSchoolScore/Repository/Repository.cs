@@ -104,7 +104,6 @@ namespace ManageSchoolScore.Repository
                 if (bulkData.Count > 0)
                 {
                     await ImportStudentScoresAsync(bulkData);
-                    bulkData.Clear();
                 }
             }
         }
@@ -168,8 +167,6 @@ namespace ManageSchoolScore.Repository
             }
 
             await BulkInsertStudentNSubject(studentList, scoreList);
-            scoreList.Clear();
-            studentList.Clear();
         }
 
         private static async Task BulkInsertStudentNSubject(IEnumerable<Student> studentList, List<Score> scoreList)
