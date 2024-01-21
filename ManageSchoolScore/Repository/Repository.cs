@@ -171,7 +171,7 @@ namespace ManageSchoolScore.Repository
 
         private static async Task BulkInsertStudentNSubject(IEnumerable<Student> studentList, List<Score> scoreList)
         {
-            var CommitBatchSize = 50000;
+            var CommitBatchSize = 80000;
             using (var context = new DBContextMSS())
             {
                 await context.BulkInsertAsync(studentList);
