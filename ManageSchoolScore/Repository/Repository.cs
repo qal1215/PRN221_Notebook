@@ -1,10 +1,12 @@
 ﻿using ManageSchoolScore.DatabaseContextMSS;
 using ManageSchoolScore.Models;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ManageSchoolScore.Repository
@@ -15,7 +17,7 @@ namespace ManageSchoolScore.Repository
 
         private static uint SchoolYearId = 0;
 
-        private static Hashtable HashSubject = new Hashtable();
+        private static Hashtable? HashSubject = null;
 
         private static string[] SubjectCodes = new string[] {
                         "MATH",
@@ -30,6 +32,7 @@ namespace ManageSchoolScore.Repository
                         "CSS",
                         "ENG"
                     };
+
 
         public static StudentRaw ParseLineToStudent(string line)
         {
@@ -108,25 +111,28 @@ namespace ManageSchoolScore.Repository
             }
         }
 
-
-        private static async Task SetUp()
+        public static async Task SetUp()
         {
-            using (var context = new DBContextMSS())
+            if (HashSubject == null)
             {
-                foreach (var subjectCode in SubjectCodes)
+                HashSubject = new Hashtable();
+                using (var context = new DBContextMSS())
                 {
-                    var id = await context.Subjects
-                        .Where(x => x.Code == subjectCode)
-                        .Select(x => x.Id)
+                    foreach (var subjectCode in SubjectCodes)
+                    {
+                        var id = await context.Subjects
+                            .Where(x => x.Code == subjectCode)
+                            .Select(x => x.Id)
+                            .FirstOrDefaultAsync();
+
+                        HashSubject.Add(subjectCode, id);
+                    }
+
+                    SchoolYearId = await context.SchoolYears
+                        .Where(sy => sy.ExamYear == YearNow)
+                        .Select(sy => sy.Id)
                         .FirstOrDefaultAsync();
-
-                    HashSubject.Add(subjectCode, id);
                 }
-
-                SchoolYearId = await context.SchoolYears
-                    .Where(sy => sy.ExamYear == YearNow)
-                    .Select(sy => sy.Id)
-                    .FirstOrDefaultAsync();
             }
         }
 
@@ -166,35 +172,59 @@ namespace ManageSchoolScore.Repository
                 }
             }
 
-            await BulkInsertStudentNSubject(studentList, scoreList);
+            await BulkInsertStudents(studentList);
+            await MuiltiTaskInsertScores(scoreList);
+
         }
 
-        private static async Task BulkInsertStudentNSubject(IEnumerable<Student> studentList, List<Score> scoreList)
+        private static async Task BulkInsertStudents(IEnumerable<Student> studentList)
         {
-            var CommitBatchSize = 185000;
             using (var context = new DBContextMSS())
             {
                 await context.BulkInsertAsync(studentList);
             }
+        }
 
-            int pageIndex = (scoreList.Count / CommitBatchSize) + (scoreList.Count % CommitBatchSize == 0 ? 0 : 1);
-            using (var context = new DBContextMSS())
+        private static async Task MuiltiTaskInsertScores(IEnumerable<Score> scoreList)
+        {
+            var commitBatchSize = 185000;
+            int pagingScore = (scoreList.Count() / commitBatchSize) + (scoreList.Count() % commitBatchSize == 0 ? 0 : 1);
+            ThreadController tc = new ThreadController();
+            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+            PauseTokenSource pauseTokenSource = new PauseTokenSource();
+            tc.StartTask(async () =>
             {
-                if (scoreList.Count >= CommitBatchSize)
+                using (var context = new DBContextMSS())
                 {
-                    for (int i = 0; i < pageIndex; i++)
+                    if (scoreList.Count() >= commitBatchSize)
                     {
-                        await context.BulkInsertAsync(scoreList
-                            .Skip(i * CommitBatchSize)
-                            .Take(CommitBatchSize)
-                            .ToList());
+                        for (int i = 0; i < pagingScore; i++)
+                        {
+                            await context.BulkInsertAsync(scoreList
+                                    .Skip(i * commitBatchSize)
+                                    .Take(commitBatchSize)
+                                    .ToList());
+                        }
+                    }
+                    else
+                    {
+                        await context.BulkInsertAsync(scoreList);
                     }
                 }
-                else
+
+
+                try
                 {
-                    await context.BulkInsertAsync(scoreList);
+                    cancellationTokenSource.Token.ThrowIfCancellationRequested();
                 }
-            }
+                catch
+                {
+                    return;
+                }
+                await pauseTokenSource.Token.PauseIfRequestedAsync();
+            }, cancellationTokenSource, pauseTokenSource);
+            await tc._Task.WaitAsync(cancellationTokenSource.Token);
+
         }
     }
 }

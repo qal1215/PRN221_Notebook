@@ -37,6 +37,7 @@ namespace ManageSchoolScore
             this.cbSchoolYear.SelectedItem = years[0];
 
             this.txtPathFile.Text = "C:\\Users\\Aka Bom\\Desktop\\2017.csv";
+
         }
 
         void dt_Tick(object sender, EventArgs e)
@@ -70,6 +71,7 @@ namespace ManageSchoolScore
 
             var filePath = this.txtPathFile.Text;
             var yearNow = (int)this.cbSchoolYear.SelectedItem;
+            //await Repository.Repository.SetUp();
             await Repository.Repository.CommitAsync(filePath, yearNow);
             stopWatch.Stop();
         }
