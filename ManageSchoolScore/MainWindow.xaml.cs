@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using ManageSchoolScore.Models;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -15,6 +16,7 @@ namespace ManageSchoolScore
         DispatcherTimer dispatcherTimer = new DispatcherTimer();
         Stopwatch stopWatch = new Stopwatch();
         string currentTime = string.Empty;
+        List<Statistics> statistics = new List<Statistics>();
 
         public MainWindow()
         {
@@ -36,7 +38,7 @@ namespace ManageSchoolScore
             this.cbSchoolYear.ItemsSource = years;
             this.cbSchoolYear.SelectedItem = years[0];
 
-            this.txtPathFile.Text = "C:\\Users\\Aka Bom\\Desktop\\2017.csv";
+            this.txtPathFile.Text = "C:\\Users\\Aka Bom\\Desktop\\2017-2021.csv\\2017-2021.csv";
 
         }
 
@@ -76,10 +78,26 @@ namespace ManageSchoolScore
             stopWatch.Stop();
         }
 
+        private async void Abc()
+        {
+
+        }
+
         private void Button_Click_2(object sender, RoutedEventArgs e)
         {
             stopWatch.Reset();
             timer.Content = "00:00:00";
+        }
+
+        private async void Button_Click_3(object sender, RoutedEventArgs e)
+        {
+            stopWatch.Start();
+            dispatcherTimer.Start();
+            await Repository.Repository.SetUp();
+            this.statistics = await Repository.Repository.Statistics();
+            dataGrid.ItemsSource = null;
+            dataGrid.ItemsSource = this.statistics;
+            stopWatch.Stop();
         }
     }
 }

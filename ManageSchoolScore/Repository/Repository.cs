@@ -6,7 +6,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace ManageSchoolScore.Repository
@@ -33,6 +32,8 @@ namespace ManageSchoolScore.Repository
                         "ENG"
                     };
 
+        private static Hashtable? HashYear = null;
+
 
         public static StudentRaw ParseLineToStudent(string line)
         {
@@ -41,19 +42,17 @@ namespace ManageSchoolScore.Repository
             var student = new StudentRaw
             {
                 ID = parts[0],
-                Province = parts[1],
-                Mathematics = TryParseNullableDouble(parts[2]),
-                Literature = TryParseNullableDouble(parts[3]),
-                Physics = TryParseNullableDouble(parts[4]),
-                Chemistry = TryParseNullableDouble(parts[5]),
-                Biology = TryParseNullableDouble(parts[6]),
-                CombinedNaturalSciences = TryParseNullableDouble(parts[7]),
+                Mathematics = TryParseNullableDouble(parts[1]),
+                Literature = TryParseNullableDouble(parts[2]),
+                Physics = TryParseNullableDouble(parts[3]),
+                Biology = TryParseNullableDouble(parts[4]),
+                English = TryParseNullableDouble(parts[5]),
+                YearNow = TryParseNullableInt(parts[6]),
+                Chemistry = TryParseNullableDouble(parts[7]),
                 History = TryParseNullableDouble(parts[8]),
                 Geography = TryParseNullableDouble(parts[9]),
                 CivicEducation = TryParseNullableDouble(parts[10]),
-                CombinedSocialSciences = TryParseNullableDouble(parts[11]),
-                English = TryParseNullableDouble(parts[12]),
-                YearNow = 0,
+                Province = parts[11],
             };
 
             student.ScoreTable = new Hashtable{
@@ -71,6 +70,15 @@ namespace ManageSchoolScore.Repository
             };
 
             return student;
+        }
+
+        private static int? TryParseNullableInt(string value)
+        {
+            if (int.TryParse(value, out int result))
+            {
+                return result;
+            }
+            return null;
         }
 
         private static double? TryParseNullableDouble(string value)
@@ -116,6 +124,7 @@ namespace ManageSchoolScore.Repository
             if (HashSubject == null)
             {
                 HashSubject = new Hashtable();
+
                 using (var context = new DBContextMSS())
                 {
                     foreach (var subjectCode in SubjectCodes)
@@ -127,11 +136,23 @@ namespace ManageSchoolScore.Repository
 
                         HashSubject.Add(subjectCode, id);
                     }
+                }
+            }
 
-                    SchoolYearId = await context.SchoolYears
-                        .Where(sy => sy.ExamYear == YearNow)
-                        .Select(sy => sy.Id)
-                        .FirstOrDefaultAsync();
+            if (HashYear == null)
+            {
+                HashYear = new Hashtable();
+                using (var context = new DBContextMSS())
+                {
+                    for (int i = 2017; i <= 2024; i++)
+                    {
+                        var id = await context.SchoolYears
+                            .Where(x => x.ExamYear == i)
+                            .Select(x => x.Id)
+                            .FirstOrDefaultAsync();
+
+                        HashYear.Add(i, id);
+                    }
                 }
             }
         }
@@ -153,7 +174,7 @@ namespace ManageSchoolScore.Repository
                 {
                     Id = studentId,
                     StudentCode = studentCsv.ID,
-                    SchoolYearId = SchoolYearId,
+                    SchoolYearId = (uint)HashYear![studentCsv.YearNow!]!,
                     Status = "Active"
                 });
 
@@ -171,9 +192,11 @@ namespace ManageSchoolScore.Repository
                     }
                 }
             }
-
+            studentCsvs = null;
             await BulkInsertStudents(studentList);
             await MuiltiTaskInsertScores(scoreList);
+            studentList = null;
+            scoreList = null;
 
         }
 
@@ -187,44 +210,78 @@ namespace ManageSchoolScore.Repository
 
         private static async Task MuiltiTaskInsertScores(IEnumerable<Score> scoreList)
         {
-            var commitBatchSize = 185000;
+            var commitBatchSize = 100000;
             int pagingScore = (scoreList.Count() / commitBatchSize) + (scoreList.Count() % commitBatchSize == 0 ? 0 : 1);
-            ThreadController tc = new ThreadController();
-            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-            PauseTokenSource pauseTokenSource = new PauseTokenSource();
-            tc.StartTask(async () =>
+
+            using (var context = new DBContextMSS())
             {
-                using (var context = new DBContextMSS())
+                for (int i = 0; i <= pagingScore; i++)
                 {
-                    if (scoreList.Count() >= commitBatchSize)
-                    {
-                        for (int i = 0; i < pagingScore; i++)
-                        {
-                            await context.BulkInsertAsync(scoreList
-                                    .Skip(i * commitBatchSize)
-                                    .Take(commitBatchSize)
-                                    .ToList());
-                        }
-                    }
-                    else
-                    {
-                        await context.BulkInsertAsync(scoreList);
-                    }
+                    await context.BulkInsertAsync(scoreList
+                            .Skip(i * commitBatchSize)
+                            .Take(commitBatchSize)
+                            .ToList());
                 }
+            }
+        }
 
-
-                try
+        public static async Task<List<Statistics>> Statistics()
+        {
+            List<Statistics> statistics = new();
+            using (var context = new DBContextMSS())
+            {
+                for (int i = 2017; i <= 2021; i++)
                 {
-                    cancellationTokenSource.Token.ThrowIfCancellationRequested();
-                }
-                catch
-                {
-                    return;
-                }
-                await pauseTokenSource.Token.PauseIfRequestedAsync();
-            }, cancellationTokenSource, pauseTokenSource);
-            await tc._Task.WaitAsync(cancellationTokenSource.Token);
+                    var listId = await context.Students
+                        .Where(s => s.SchoolYearId == (uint)HashYear[i])
+                        .Select(s => s.Id)
+                        .ToListAsync();
 
+                    var year = new Statistics();
+                    year.Year = i;
+                    year.StudentCount = (uint)listId.Count();
+                    year.Math = (uint)await context.Scores
+                        .Where(s => listId.Contains(s.StudentId)
+                        && s.SubjectId.Equals(HashSubject[SubjectCodes[0]]))
+                        .CountAsync();
+                    year.Literature = (uint)await context.Scores
+                        .Where(s => listId.Contains(s.StudentId)
+                        && s.SubjectId.Equals(HashSubject[SubjectCodes[1]]))
+                        .CountAsync();
+                    year.Physics = (uint)await context.Scores
+                        .Where(s => listId.Contains(s.StudentId)
+                        && s.SubjectId.Equals(HashSubject[SubjectCodes[2]]))
+                        .CountAsync();
+                    year.Chemistry = (uint)await context.Scores
+                        .Where(s => listId.Contains(s.StudentId)
+                        && s.SubjectId.Equals(HashSubject[SubjectCodes[3]]))
+                        .CountAsync();
+                    year.Biology = (uint)await context.Scores
+                        .Where(s => listId.Contains(s.StudentId)
+                        && s.SubjectId.Equals(HashSubject[SubjectCodes[4]]))
+                        .CountAsync();
+                    year.History = (uint)await context.Scores
+                        .Where(s => listId.Contains(s.StudentId)
+                        && s.SubjectId.Equals(HashSubject[SubjectCodes[6]]))
+                        .CountAsync();
+                    year.Geography = (uint)await context.Scores
+                        .Where(s => listId.Contains(s.StudentId)
+                        && s.SubjectId.Equals(HashSubject[SubjectCodes[7]]))
+                        .CountAsync();
+                    year.CivicEducation = (uint)await context.Scores
+                        .Where(s => listId.Contains(s.StudentId)
+                        && s.SubjectId.Equals(HashSubject[SubjectCodes[8]]))
+                        .CountAsync();
+                    year.English = (uint)await context.Scores
+                        .Where(s => listId.Contains(s.StudentId)
+                        && s.SubjectId.Equals(HashSubject[SubjectCodes[10]]))
+                        .CountAsync();
+
+                    statistics.Add(year);
+                }
+            }
+
+            return statistics;
         }
     }
 }

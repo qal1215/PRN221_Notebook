@@ -13,6 +13,9 @@
         <Button Content="Input" HorizontalAlignment="Left" Margin="30,127,0,0" VerticalAlignment="Top" Height="31" Width="120" Click="Button_Click_1"/>
         <Button Content="Clear" HorizontalAlignment="Left" Margin="215,127,0,0" VerticalAlignment="Top" Height="31" Width="120" Click="Button_Click_2"/>
         <Label Name="timer" Content="00:00:000" HorizontalAlignment="Left" Margin="239,17,0,0" VerticalAlignment="Top" Width="137" FontSize="24"/>
+        <Button Content="Statistics" HorizontalAlignment="Left" Margin="10,175,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.394,0.07" Width="80" Click="Button_Click_3"/>
+        <DataGrid Name="dataGrid" Margin="10,200,10,10" AutoGenerateColumns="True">
 
+        </DataGrid>
     </Grid>
 </Window>
