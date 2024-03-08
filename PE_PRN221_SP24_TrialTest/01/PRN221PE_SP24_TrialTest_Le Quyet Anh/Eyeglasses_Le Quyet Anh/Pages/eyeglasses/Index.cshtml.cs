@@ -21,13 +21,20 @@ namespace Eyeglasses_Le_Quyet_Anh.Pages.eyeglasses
 
         public IList<Eyeglass> Eyeglass { get; set; } = default!;
 
-        public async Task OnGetAsync([FromQuery] int page)
+        public int Role { get; set; }
+
+        public async Task<IActionResult> OnGetAsync([FromQuery] int page)
         {
+            var roleId = Request.Cookies["Role"];
+            if (roleId is null) return RedirectToPage("/");
+            Role = int.Parse(roleId);
+
             if (page <= 0) page = 1;
             PageIndex = page;
             var totalEyeglasses = (await _eyeglassesRepo.GetAll()).Count();
             TotalPage = totalEyeglasses % 4 < 0 ? totalEyeglasses / 4 : (totalEyeglasses / 4) + 1;
             Eyeglass = await _eyeglassesRepo.GetPaginedEyeglasses(PageIndex);
+            return Page();
         }
     }
 }

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Eyeglasses.DAO.Models;
+﻿namespace Eyeglasses.DAO.Models;
 
 public partial class LensType
 {

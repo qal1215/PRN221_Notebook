@@ -1,27 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Eyeglasses.DAO.Models;
+using Eyeglasses.Repository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Eyeglasses.DAO.DbContext2024;
-using Eyeglasses.DAO.Models;
 
 namespace Eyeglasses_Le_Quyet_Anh.Pages.eyeglasses
 {
     public class CreateModel : PageModel
     {
-        private readonly Eyeglasses.DAO.DbContext2024.Eyeglasses2024DbContext _context;
+        private readonly EyeglassesRepository _eyeglassesRepository;
+        private readonly LensTypeRepository _lensTypeRepository;
 
-        public CreateModel(Eyeglasses.DAO.DbContext2024.Eyeglasses2024DbContext context)
+        public CreateModel(EyeglassesRepository eyeglassesRepository, LensTypeRepository lensTypeRepository)
         {
-            _context = context;
+            _eyeglassesRepository = eyeglassesRepository;
+            _lensTypeRepository = lensTypeRepository;
         }
 
-        public IActionResult OnGet()
+        public async Task<IActionResult> OnGetAsync()
         {
-        ViewData["LensTypeId"] = new SelectList(_context.LensTypes, "LensTypeId", "LensTypeId");
+            ViewData["LensTypeId"] = new SelectList(await _lensTypeRepository.GetAll(), "LensTypeId", "LensTypeId");
             return Page();
         }
 
@@ -36,8 +34,8 @@ namespace Eyeglasses_Le_Quyet_Anh.Pages.eyeglasses
                 return Page();
             }
 
-            _context.Eyeglasses.Add(Eyeglass);
-            await _context.SaveChangesAsync();
+            await _eyeglassesRepository.Insert(Eyeglass);
+            await _eyeglassesRepository.Save();
 
             return RedirectToPage("./Index");
         }

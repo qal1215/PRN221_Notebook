@@ -18,5 +18,17 @@ namespace Eyeglasses.Repository
                 .Include(e => e.LensType)
                 .ToListAsync();
         }
+
+        public Eyeglasses2024DbContext GetContext()
+        {
+            return _context;
+        }
+
+        public async Task UpdateWithoutTracking(Eyeglass eyeglass)
+        {
+            _context.ChangeTracker.Clear();
+            _context.Entry(eyeglass).State = EntityState.Modified;
+            await Save();
+        }
     }
 }

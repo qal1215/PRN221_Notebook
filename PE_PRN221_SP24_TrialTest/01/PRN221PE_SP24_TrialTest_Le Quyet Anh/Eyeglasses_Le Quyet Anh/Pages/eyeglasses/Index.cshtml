@@ -56,9 +56,15 @@
                 @Html.DisplayFor(modelItem => item.LensType.LensTypeId)
             </td>
             <td>
-                <a asp-page="./Edit" asp-route-id="@item.EyeglassesId">Edit</a> |
-                <a asp-page="./Details" asp-route-id="@item.EyeglassesId">Details</a> |
-                <a asp-page="./Delete" asp-route-id="@item.EyeglassesId">Delete</a>
+                @{
+                    if(Model.Role == 1){
+                        <div>
+                                <a asp-page="./Edit" asp-route-id="@item.EyeglassesId">Edit</a> |
+                                <a asp-page="./Delete" asp-route-id="@item.EyeglassesId">Delete</a> |
+                                <a asp-page="./Details" asp-route-id="@item.EyeglassesId">Details</a>
+                        </div>
+                    }
+                }
             </td>
         </tr>
 }

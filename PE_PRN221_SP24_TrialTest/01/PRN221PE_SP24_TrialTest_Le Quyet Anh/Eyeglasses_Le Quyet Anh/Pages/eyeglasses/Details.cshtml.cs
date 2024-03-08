@@ -1,22 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Eyeglasses.DAO.Models;
+using Eyeglasses.Repository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
-using Eyeglasses.DAO.DbContext2024;
-using Eyeglasses.DAO.Models;
 
 namespace Eyeglasses_Le_Quyet_Anh.Pages.eyeglasses
 {
     public class DetailsModel : PageModel
     {
-        private readonly Eyeglasses.DAO.DbContext2024.Eyeglasses2024DbContext _context;
+        private readonly EyeglassesRepository _eyeglassesRepository;
 
-        public DetailsModel(Eyeglasses.DAO.DbContext2024.Eyeglasses2024DbContext context)
+        public DetailsModel(EyeglassesRepository eyeglassesRepository)
         {
-            _context = context;
+            _eyeglassesRepository = eyeglassesRepository;
         }
 
         public Eyeglass Eyeglass { get; set; } = default!;
@@ -28,7 +23,7 @@ namespace Eyeglasses_Le_Quyet_Anh.Pages.eyeglasses
                 return NotFound();
             }
 
-            var eyeglass = await _context.Eyeglasses.FirstOrDefaultAsync(m => m.EyeglassesId == id);
+            var eyeglass = await _eyeglassesRepository.GetById(id.Value);
             if (eyeglass == null)
             {
                 return NotFound();

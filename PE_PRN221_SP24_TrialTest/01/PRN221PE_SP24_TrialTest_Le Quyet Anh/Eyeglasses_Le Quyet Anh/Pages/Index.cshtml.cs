@@ -1,4 +1,3 @@
-using Eyeglasses.DAO.DbContext2024;
 using Eyeglasses.Repository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -18,18 +17,17 @@ namespace Eyeglasses_Le_Quyet_Anh.Pages
 
         public int Role { get; set; }
 
-        public IndexModel(ILogger<IndexModel> logger)
+        public IndexModel(ILogger<IndexModel> logger, StoreAccountRepository accountRepo)
         {
             _logger = logger;
-            Eyeglasses2024DbContext context = new();
-            _accountRepo = new StoreAccountRepository(context);
+            _accountRepo = accountRepo;
         }
 
         public IActionResult OnGet()
         {
             if (IsAuthen && IsSuccess)
             {
-                return Redirect("/eyeglasses");
+                return RedirectToPage("/eyeglasses", new { roleId = Role });
             }
             return Page();
         }
@@ -56,6 +54,7 @@ namespace Eyeglasses_Le_Quyet_Anh.Pages
             Role = account.Role!.Value;
             IsSuccess = true;
             IsAuthen = true;
+            Response.Cookies.Append("Role", Role.ToString());
             return Redirect("/eyeglasses");
         }
     }
