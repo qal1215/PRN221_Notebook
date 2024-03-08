@@ -9,6 +9,7 @@ namespace ManageSchoolScore.Models
         public int ExamYear { get; set; }
 
         public string Status { get; set; } = "";
+
     }
 
     public static class SchoolYearSeed
@@ -21,7 +22,7 @@ namespace ManageSchoolScore.Models
             {
                 SchoolYears.Add(new SchoolYear
                 {
-                    Id = (uint)id,
+                    Id = id,
                     ExamYear = year,
                     Name = year.ToString(),
                     Status = "" // Assuming Status is an empty string for now

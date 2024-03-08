@@ -7,6 +7,6 @@ namespace ManageSchoolScore.Models
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public uint Id { get; set; }
+        public int Id { get; set; }
     }
 }

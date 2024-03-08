@@ -7,7 +7,7 @@ namespace ManageSchoolScore.Models
         [Required]
         public string StudentCode { get; set; } = null!;
 
-        public uint SchoolYearId { get; set; }
+        public int SchoolYearId { get; set; }
 
         public string Status { get; set; } = "";
 

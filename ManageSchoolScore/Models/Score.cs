@@ -2,9 +2,9 @@
 {
     public class Score : BaseModel
     {
-        public uint StudentId { get; set; }
+        public int StudentId { get; set; }
 
-        public uint SubjectId { get; set; }
+        public int SubjectId { get; set; }
 
         public double ScoreInDecimal { get; set; }
 

@@ -3,6 +3,7 @@ using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Windows;
 using System.Windows.Threading;
 
@@ -17,6 +18,8 @@ namespace ManageSchoolScore
         Stopwatch stopWatch = new Stopwatch();
         string currentTime = string.Empty;
         List<Statistics> statistics = new List<Statistics>();
+        List<int> years = new List<int>();
+
 
         public MainWindow()
         {
@@ -25,18 +28,17 @@ namespace ManageSchoolScore
             dispatcherTimer.Tick += new EventHandler(dt_Tick);
             dispatcherTimer.Interval = new TimeSpan(0, 0, 0, 0, 1);
 
-            List<int> years = new List<int>();
             years.Add(2017);
             years.Add(2018);
             years.Add(2019);
             years.Add(2020);
             years.Add(2021);
-            years.Add(2022);
-            years.Add(2023);
-            years.Add(2024);
 
             this.cbSchoolYear.ItemsSource = years;
-            this.cbSchoolYear.SelectedItem = years[0];
+            this.cbSchoolYear.SelectedItem = 2017;
+
+            this.cbSchoolYear_2.ItemsSource = years;
+            this.cbSchoolYear_2.SelectedItem = 2017;
 
             this.txtPathFile.Text = "C:\\Users\\Aka Bom\\Desktop\\2017-2021.csv\\2017-2021.csv";
 
@@ -74,13 +76,8 @@ namespace ManageSchoolScore
             var filePath = this.txtPathFile.Text;
             var yearNow = (int)this.cbSchoolYear.SelectedItem;
             //await Repository.Repository.SetUp();
-            await Repository.Repository.CommitAsync(filePath, yearNow);
+            await Repository.Repository.CommitAsync(filePath);
             stopWatch.Stop();
-        }
-
-        private async void Abc()
-        {
-
         }
 
         private void Button_Click_2(object sender, RoutedEventArgs e)
@@ -97,6 +94,36 @@ namespace ManageSchoolScore
             this.statistics = await Repository.Repository.Statistics();
             dataGrid.ItemsSource = null;
             dataGrid.ItemsSource = this.statistics;
+            stopWatch.Stop();
+        }
+
+        private async void Button_Click_4(object sender, RoutedEventArgs e)
+        {
+            stopWatch.Start();
+            dispatcherTimer.Start();
+            await Repository.Repository.SetUp();
+            int year2 = (int)this.cbSchoolYear_2.SelectedItem;
+            var topScores = await Repository.Repository.GetTopScores(year2);
+            if (topScores != null || topScores!.Count == 0)
+            {
+                dgTopScore.ItemsSource = null;
+                dgTopScore.ItemsSource = topScores;
+
+                var topScoresStatistics = new List<object>();
+                topScoresStatistics.Add(new
+                {
+                    Năm = year2,
+                    A00 = topScores.Where(ts => ts.KhoiThi == "A00").Select(ts => ts.Score).First(),
+                    B00 = topScores.Where(ts => ts.KhoiThi == "B00").Select(ts => ts.Score).First(),
+                    C00 = topScores.Where(ts => ts.KhoiThi == "C00").Select(ts => ts.Score).First(),
+                    D01 = topScores.Where(ts => ts.KhoiThi == "D01").Select(ts => ts.Score).First(),
+                    A01 = topScores.Where(ts => ts.KhoiThi == "A01").Select(ts => ts.Score).First(),
+                });
+                dgTopScore2.ItemsSource = null;
+                dgTopScore2.ItemsSource = topScoresStatistics;
+            }
+
+
             stopWatch.Stop();
         }
     }

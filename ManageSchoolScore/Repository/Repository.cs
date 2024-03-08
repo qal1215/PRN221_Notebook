@@ -1,7 +1,6 @@
 ﻿using ManageSchoolScore.DatabaseContextMSS;
 using ManageSchoolScore.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -12,10 +11,6 @@ namespace ManageSchoolScore.Repository
 {
     public static class Repository
     {
-        private static int YearNow = 0;
-
-        private static uint SchoolYearId = 0;
-
         private static Hashtable? HashSubject = null;
 
         private static string[] SubjectCodes = new string[] {
@@ -34,6 +29,13 @@ namespace ManageSchoolScore.Repository
 
         private static Hashtable? HashYear = null;
 
+        private static List<Statistics> statisticsList = new();
+
+        //private static Hashtable TopScores = new();
+
+        private static List<TopScore> topScores = null;
+
+        private static int indexNow = 0;
 
         public static StudentRaw ParseLineToStudent(string line)
         {
@@ -42,58 +44,59 @@ namespace ManageSchoolScore.Repository
             var student = new StudentRaw
             {
                 ID = parts[0],
-                Mathematics = TryParseNullableDouble(parts[1]),
-                Literature = TryParseNullableDouble(parts[2]),
-                Physics = TryParseNullableDouble(parts[3]),
-                Biology = TryParseNullableDouble(parts[4]),
-                English = TryParseNullableDouble(parts[5]),
+                //Mathematics = TryParseNullableDouble(parts[1]),
+                //Literature = TryParseNullableDouble(parts[2]),
+                //Physics = TryParseNullableDouble(parts[3]),
+                //Biology = TryParseNullableDouble(parts[4]),
+                //English = TryParseNullableDouble(parts[5]),
                 YearNow = TryParseNullableInt(parts[6]),
-                Chemistry = TryParseNullableDouble(parts[7]),
-                History = TryParseNullableDouble(parts[8]),
-                Geography = TryParseNullableDouble(parts[9]),
-                CivicEducation = TryParseNullableDouble(parts[10]),
+                //Chemistry = TryParseNullableDouble(parts[7]),
+                //History = TryParseNullableDouble(parts[8]),
+                //Geography = TryParseNullableDouble(parts[9]),
+                //CivicEducation = TryParseNullableDouble(parts[10]),
                 Province = parts[11],
             };
 
             student.ScoreTable = new Hashtable{
-                {SubjectCodes[0], student.Mathematics},
-                {SubjectCodes[1], student.Literature},
-                {SubjectCodes[2], student.Physics},
-                {SubjectCodes[3], student.Chemistry},
-                {SubjectCodes[4], student.Biology},
-                {SubjectCodes[5], student.CombinedNaturalSciences},
-                {SubjectCodes[6], student.History},
-                {SubjectCodes[7], student.Geography},
-                {SubjectCodes[8], student.CivicEducation},
-                {SubjectCodes[9], student.CombinedSocialSciences},
-                {SubjectCodes[10], student.English}
+                {SubjectCodes[0], TryParseNullableDouble(parts[1])},
+                {SubjectCodes[1], TryParseNullableDouble(parts[2])},
+                {SubjectCodes[2], TryParseNullableDouble(parts[3])},
+                {SubjectCodes[3], TryParseNullableDouble(parts[7])},
+                {SubjectCodes[4], TryParseNullableDouble(parts[4])},
+                //{SubjectCodes[5], student.CombinedNaturalSciences},
+                {SubjectCodes[6], TryParseNullableDouble(parts[8])},
+                {SubjectCodes[7], TryParseNullableDouble(parts[9])},
+                {SubjectCodes[8], TryParseNullableDouble(parts[10])},
+                //{SubjectCodes[9], student.CombinedSocialSciences},
+                {SubjectCodes[10], TryParseNullableDouble(parts[5])}
             };
 
             return student;
         }
 
-        private static int? TryParseNullableInt(string value)
+        private static int TryParseNullableInt(string value)
         {
             if (int.TryParse(value, out int result))
             {
                 return result;
             }
-            return null;
+            return 0;
         }
 
-        private static double? TryParseNullableDouble(string value)
+        private static double TryParseNullableDouble(string value)
         {
             if (double.TryParse(value, out double result))
             {
                 return result;
             }
-            return null;
+            return 0;
         }
 
-        public static async Task CommitAsync(string pathFile, int year)
+        private static DBContextMSS context = new DBContextMSS();
+
+        public static async Task CommitAsync(string pathFile)
         {
             // Setup one time
-            YearNow = year;
             await SetUp();
 
             using (var reader = new StreamReader(pathFile))
@@ -103,9 +106,13 @@ namespace ManageSchoolScore.Repository
                 while ((line = reader.ReadLine()) != null)
                 {
                     var data = ParseLineToStudent(line);
+
+                    StatictisScore(data);
+
+
                     bulkData.Add(data);
 
-                    if (bulkData.Count >= 150000)
+                    if (bulkData.Count >= 500000)
                     {
                         await ImportStudentScoresAsync(bulkData);
                         bulkData.Clear();
@@ -116,6 +123,128 @@ namespace ManageSchoolScore.Repository
                 {
                     await ImportStudentScoresAsync(bulkData);
                 }
+            }
+            await SaveStatisticsAsync();
+        }
+
+        private static async Task SaveStatisticsAsync()
+        {
+            await context.BulkInsertAsync(statisticsList);
+            await context.BulkInsertAsync(topScores);
+        }
+
+        private static void StatictisScore(StudentRaw raw)
+        {
+            var statictis = statisticsList.Where(s => s.Year == raw.YearNow)
+                .FirstOrDefault();
+
+            if (statictis == null)
+            {
+                statictis = new Statistics();
+                statictis.Year = raw.YearNow!.Value;
+            }
+
+            statictis.StudentCount++;
+            statictis.Math += (double)raw.ScoreTable["MATH"]! > 0 ? 1 : 0;
+            statictis.Literature += (double)raw.ScoreTable!["LIT"]! > 0 ? 1 : 0;
+            statictis.English += (double)raw.ScoreTable!["ENG"]! > 0 ? 1 : 0;
+            statictis.Physics += (double)raw.ScoreTable!["PHYS"]! > 0 ? 1 : 0;
+            statictis.Chemistry += (double)raw.ScoreTable!["CHEM"]! > 0 ? 1 : 0;
+            statictis.Biology += (double)raw.ScoreTable!["BIO"]! > 0 ? 1 : 0;
+            statictis.History += (double)raw.ScoreTable!["HIST"]! > 0 ? 1 : 0;
+            statictis.Geography += (double)raw.ScoreTable!["GEO"]! > 0 ? 1 : 0;
+            statictis.CivicEducation += (double)raw.ScoreTable!["CIV"]! > 0 ? 1 : 0;
+
+            if (topScores == null)
+            {
+                topScores = new List<TopScore>();
+            }
+
+            double a00 = (double)raw.ScoreTable["MATH"]! + (double)raw.ScoreTable["PHYS"]! + (double)raw.ScoreTable["CHEM"]!;
+            var temp = topScores
+                .Where(x => x.KhoiThi == "A00" && x.SchoolYear == raw.YearNow)
+                .Where(x => x.Score > a00)
+                .FirstOrDefault();
+
+            if (temp is null)
+            {
+                TopScore topA00 = new();
+                topA00.SchoolYear = raw.YearNow!.Value;
+                topA00.KhoiThi = "A00";
+                topA00.Score = a00;
+                topA00.StudentCode = raw.ID;
+                topScores.RemoveAll(x => x.KhoiThi == "A00" && x.SchoolYear == raw.YearNow && x.Score < a00);
+                topScores.Add(topA00);
+            }
+
+            double b00 = (double)raw.ScoreTable["MATH"]! + (double)raw.ScoreTable["CHEM"]! + (double)raw.ScoreTable["BIO"]!;
+
+            temp = topScores
+                .Where(x => x.KhoiThi == "B00" && x.SchoolYear == raw.YearNow)
+                .Where(x => x.Score > b00)
+                .FirstOrDefault();
+
+            if (temp is null)
+            {
+                TopScore topB00 = new();
+                topB00.SchoolYear = raw.YearNow!.Value;
+                topB00.KhoiThi = "B00";
+                topB00.Score = b00;
+                topB00.StudentCode = raw.ID;
+                topScores.RemoveAll(x => x.KhoiThi == "B00" && x.SchoolYear == raw.YearNow && x.Score < b00);
+                topScores.Add(topB00);
+            }
+
+            double c00 = (double)raw.ScoreTable["LIT"]! + (double)raw.ScoreTable["HIST"]! + (double)raw.ScoreTable["GEO"]!;
+            temp = topScores
+                .Where(x => x.KhoiThi == "C00" && x.SchoolYear == raw.YearNow)
+                .Where(x => x.Score > c00)
+                .FirstOrDefault();
+            if (temp is null)
+            {
+                TopScore topC00 = new();
+                topC00.SchoolYear = raw.YearNow!.Value;
+                topC00.KhoiThi = "C00";
+                topC00.Score = c00;
+                topC00.StudentCode = raw.ID;
+
+                topScores.RemoveAll(x => x.KhoiThi == "C00" && x.SchoolYear == raw.YearNow && x.Score < c00);
+                topScores.Add(topC00);
+            }
+
+            double d01 = (double)raw.ScoreTable["MATH"]! + (double)raw.ScoreTable["LIT"]! + (double)raw.ScoreTable["ENG"]!;
+            temp = topScores
+                .Where(x => x.KhoiThi == "D01" && x.SchoolYear == raw.YearNow)
+                .Where(x => x.Score > d01)
+                .FirstOrDefault();
+
+            if (temp is null)
+            {
+                TopScore topD01 = new();
+                topD01.SchoolYear = raw.YearNow!.Value;
+                topD01.KhoiThi = "D01";
+                topD01.Score = d01;
+                topD01.StudentCode = raw.ID;
+
+                topScores.RemoveAll(x => x.KhoiThi == "D01" && x.SchoolYear == raw.YearNow && x.Score < d01);
+                topScores.Add(topD01);
+            }
+
+            double a01 = (double)raw.ScoreTable["MATH"]! + (double)raw.ScoreTable["PHYS"]! + (double)raw.ScoreTable["ENG"]!;
+            temp = topScores
+                .Where(x => x.KhoiThi == "A01" && x.SchoolYear == raw.YearNow)
+                .Where(x => x.Score > a01)
+                .FirstOrDefault();
+            if (temp is null)
+            {
+                TopScore topA01 = new();
+                topA01.SchoolYear = raw.YearNow!.Value;
+                topA01.KhoiThi = "A01";
+                topA01.Score = a01;
+                topA01.StudentCode = raw.ID;
+
+                topScores.RemoveAll(x => x.KhoiThi == "A01" && x.SchoolYear == raw.YearNow && x.Score < a01);
+                topScores.Add(topA01);
             }
         }
 
@@ -155,17 +284,20 @@ namespace ManageSchoolScore.Repository
                     }
                 }
             }
+
+            for (int i = 2017; i <= 2021; i++)
+            {
+                statisticsList.Add(new Statistics
+                {
+                    Year = i
+                });
+            }
         }
 
-        public static async Task ImportStudentScoresAsync(IEnumerable<StudentRaw> studentCsvs)
+        public static async Task ImportStudentScoresAsync(List<StudentRaw> studentCsvs)
         {
-            var scoreList = new List<Score>();
-            var studentList = new List<Student>();
-            uint indexNow = 0;
-            using (var context = new DBContextMSS())
-            {
-                indexNow = (uint)await context.Students.CountAsync();
-            }
+            List<Score> scoreList = new();
+            List<Student> studentList = new();
 
             foreach (var studentCsv in studentCsvs)
             {
@@ -174,7 +306,7 @@ namespace ManageSchoolScore.Repository
                 {
                     Id = studentId,
                     StudentCode = studentCsv.ID,
-                    SchoolYearId = (uint)HashYear![studentCsv.YearNow!]!,
+                    SchoolYearId = (int)HashYear![studentCsv.YearNow!]!,
                     Status = "Active"
                 });
 
@@ -187,101 +319,60 @@ namespace ManageSchoolScore.Repository
                         {
                             ScoreInDecimal = (double)score,
                             StudentId = studentId,
-                            SubjectId = (uint)HashSubject[subjectCode]!
+                            SubjectId = (int)HashSubject![subjectCode]!
                         });
                     }
                 }
             }
-            studentCsvs = null;
-            await BulkInsertStudents(studentList);
-            await MuiltiTaskInsertScores(scoreList);
-            studentList = null;
-            scoreList = null;
 
+            await BulkInsertStudents(studentList);
+            await BulkInsertScores(scoreList);
+            studentList.Clear();
+            scoreList.Clear();
+            studentCsvs.Clear();
         }
 
         private static async Task BulkInsertStudents(IEnumerable<Student> studentList)
         {
-            using (var context = new DBContextMSS())
-            {
-                await context.BulkInsertAsync(studentList);
-            }
+            await context.BulkInsertAsync(studentList);
         }
 
-        private static async Task MuiltiTaskInsertScores(IEnumerable<Score> scoreList)
+        private static async Task BulkInsertScores(List<Score> scoreList)
         {
-            var commitBatchSize = 100000;
-            int pagingScore = (scoreList.Count() / commitBatchSize) + (scoreList.Count() % commitBatchSize == 0 ? 0 : 1);
+            int batchSize = 1000000;
+            int page = (scoreList.Count / batchSize) + (scoreList.Count % batchSize == 0 ? 0 : 1);
 
-            using (var context = new DBContextMSS())
+            for (int i = 0; i <= page; i++)
             {
-                for (int i = 0; i <= pagingScore; i++)
-                {
-                    await context.BulkInsertAsync(scoreList
-                            .Skip(i * commitBatchSize)
-                            .Take(commitBatchSize)
-                            .ToList());
-                }
+                await context.BulkInsertAsync(scoreList
+                    .Skip(i * batchSize)
+                    .Take(batchSize));
             }
         }
 
         public static async Task<List<Statistics>> Statistics()
         {
             List<Statistics> statistics = new();
-            using (var context = new DBContextMSS())
+
+            for (int i = 2017; i <= 2021; i++)
             {
-                for (int i = 2017; i <= 2021; i++)
-                {
-                    var listId = await context.Students
-                        .Where(s => s.SchoolYearId == (uint)HashYear[i])
-                        .Select(s => s.Id)
-                        .ToListAsync();
-
-                    var year = new Statistics();
-                    year.Year = i;
-                    year.StudentCount = (uint)listId.Count();
-                    year.Math = (uint)await context.Scores
-                        .Where(s => listId.Contains(s.StudentId)
-                        && s.SubjectId.Equals(HashSubject[SubjectCodes[0]]))
-                        .CountAsync();
-                    year.Literature = (uint)await context.Scores
-                        .Where(s => listId.Contains(s.StudentId)
-                        && s.SubjectId.Equals(HashSubject[SubjectCodes[1]]))
-                        .CountAsync();
-                    year.Physics = (uint)await context.Scores
-                        .Where(s => listId.Contains(s.StudentId)
-                        && s.SubjectId.Equals(HashSubject[SubjectCodes[2]]))
-                        .CountAsync();
-                    year.Chemistry = (uint)await context.Scores
-                        .Where(s => listId.Contains(s.StudentId)
-                        && s.SubjectId.Equals(HashSubject[SubjectCodes[3]]))
-                        .CountAsync();
-                    year.Biology = (uint)await context.Scores
-                        .Where(s => listId.Contains(s.StudentId)
-                        && s.SubjectId.Equals(HashSubject[SubjectCodes[4]]))
-                        .CountAsync();
-                    year.History = (uint)await context.Scores
-                        .Where(s => listId.Contains(s.StudentId)
-                        && s.SubjectId.Equals(HashSubject[SubjectCodes[6]]))
-                        .CountAsync();
-                    year.Geography = (uint)await context.Scores
-                        .Where(s => listId.Contains(s.StudentId)
-                        && s.SubjectId.Equals(HashSubject[SubjectCodes[7]]))
-                        .CountAsync();
-                    year.CivicEducation = (uint)await context.Scores
-                        .Where(s => listId.Contains(s.StudentId)
-                        && s.SubjectId.Equals(HashSubject[SubjectCodes[8]]))
-                        .CountAsync();
-                    year.English = (uint)await context.Scores
-                        .Where(s => listId.Contains(s.StudentId)
-                        && s.SubjectId.Equals(HashSubject[SubjectCodes[10]]))
-                        .CountAsync();
-
-                    statistics.Add(year);
-                }
+                var statistic = await context.Statistics
+                    .Where(x => x.Year == i)
+                    .FirstOrDefaultAsync();
+                statistics.Add(statistic!);
             }
 
             return statistics;
+        }
+
+        public static async Task<List<TopScore>?> GetTopScores(int schoolYear)
+        {
+            //List<TopScore> topScores = new();
+
+            return await context.TopScores
+                .Where(x => x.SchoolYear == schoolYear)
+                .ToListAsync();
+
         }
     }
 }

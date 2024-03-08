@@ -5,17 +5,26 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ManageSchoolScore"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="936" Width="800">
     <Grid>
-        <ComboBox Name="cbSchoolYear" HorizontalAlignment="Left" Margin="30,27,0,0" VerticalAlignment="Top" Width="120"/>
+        <ComboBox x:Name="cbSchoolYear" HorizontalAlignment="Left" Margin="30,27,0,0" VerticalAlignment="Top" Width="120"/>
         <TextBox x:Name="txtPathFile" HorizontalAlignment="Left" Margin="30,69,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="370"/>
         <Button Content="Browser File" HorizontalAlignment="Left" Margin="422,68,0,0" VerticalAlignment="Top" Width="80" Click="Button_Click"/>
         <Button Content="Input" HorizontalAlignment="Left" Margin="30,127,0,0" VerticalAlignment="Top" Height="31" Width="120" Click="Button_Click_1"/>
         <Button Content="Clear" HorizontalAlignment="Left" Margin="215,127,0,0" VerticalAlignment="Top" Height="31" Width="120" Click="Button_Click_2"/>
         <Label Name="timer" Content="00:00:000" HorizontalAlignment="Left" Margin="239,17,0,0" VerticalAlignment="Top" Width="137" FontSize="24"/>
         <Button Content="Statistics" HorizontalAlignment="Left" Margin="10,175,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.394,0.07" Width="80" Click="Button_Click_3"/>
-        <DataGrid Name="dataGrid" Margin="10,200,10,10" AutoGenerateColumns="True">
+        <DataGrid Name="dataGrid" Margin="10,200,10,460" AutoGenerateColumns="True">
 
+        </DataGrid>
+        <ComboBox x:Name="cbSchoolYear_2" HorizontalAlignment="Left" Margin="10,495,0,0" VerticalAlignment="Top" Width="120"/>
+        <Button Content="Show Data" HorizontalAlignment="Left" Margin="155,486,0,0" VerticalAlignment="Top" Height="31" Width="120" Click="Button_Click_4"/>
+
+        <DataGrid x:Name="dgTopScore" Margin="10,656,10,10"></DataGrid>
+        <DataGrid x:Name="dgTopScore2" Margin="10,545,10,287">
+            <DataGrid.Columns >
+                
+            </DataGrid.Columns>
         </DataGrid>
     </Grid>
 </Window>

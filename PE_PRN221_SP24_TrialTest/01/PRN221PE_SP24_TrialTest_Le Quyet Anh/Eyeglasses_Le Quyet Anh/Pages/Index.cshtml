@@ -1,0 +1,48 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div>
+    @{
+        if (Model.IsError)
+        {
+            <h3>@ViewData["Error"]</h3>
+        }
+
+        if (Model.IsSuccess)
+        {
+            <h3>Login Sussecful</h3>
+        }
+    }
+</div>
+
+@{
+    if (!Model.IsSuccess || !Model.IsAuthen)
+    {
+        <div class="text-center flex flex-column">
+            <form method="post">
+                <input type="email" name="email" placeholder="Enter your email" />
+                <input type="password" name="password" placeholder="Enter your password" />
+                <input type="submit" />
+            </form>
+        </div>
+    }
+    else
+    {
+        // <div>
+        //     <table>
+        //         <thead>
+        //             @{
+        //                 foreach(string name in Model.TableHeader)
+        //                 {
+        //                     <tr>@name</tr>
+        //                 }
+        //             }
+        //         </thead>
+        //     </table>
+        // </div>
+    }
+}
+

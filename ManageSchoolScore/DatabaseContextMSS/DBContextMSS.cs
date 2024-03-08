@@ -29,6 +29,8 @@ namespace ManageSchoolScore.DatabaseContextMSS
 
         public DbSet<SchoolYear> SchoolYears { get; set; }
 
-        public DbSet<StudentRaw> StudentCsvs { get; set; }
+        public DbSet<Statistics> Statistics { get; set; }
+
+        public DbSet<TopScore> TopScores { get; set; }
     }
 }
