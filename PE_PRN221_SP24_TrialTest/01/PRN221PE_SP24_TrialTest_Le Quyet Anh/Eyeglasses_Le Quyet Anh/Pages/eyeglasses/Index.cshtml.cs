@@ -23,6 +23,18 @@ namespace Eyeglasses_Le_Quyet_Anh.Pages.eyeglasses
 
         public int Role { get; set; }
 
+        public async Task<IActionResult> Logout()
+        {
+
+            if (Request.Cookies["Role"] != null)
+            {
+                Response.Cookies.Delete("Role");
+            }
+
+            return RedirectToPage("/index");
+
+        }
+
         public async Task<IActionResult> OnGetAsync([FromQuery] int page)
         {
             var roleId = Request.Cookies["Role"];

@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34330.188
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Equipments_LeQuyetAnh", "Eyeglasses_Le Quyet Anh\Equipments_LeQuyetAnh.csproj", "{A680CD58-7EC0-4E97-BBD8-8875C462E110}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Equipments_Repo", "Eyeglasses_Repo\Equipments_Repo.csproj", "{9195758D-4667-4254-92AC-6D6D0E7221F9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A680CD58-7EC0-4E97-BBD8-8875C462E110}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A680CD58-7EC0-4E97-BBD8-8875C462E110}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A680CD58-7EC0-4E97-BBD8-8875C462E110}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A680CD58-7EC0-4E97-BBD8-8875C462E110}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9195758D-4667-4254-92AC-6D6D0E7221F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9195758D-4667-4254-92AC-6D6D0E7221F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9195758D-4667-4254-92AC-6D6D0E7221F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9195758D-4667-4254-92AC-6D6D0E7221F9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {537EEEE4-2354-46FB-A886-9E15DA9A917F}
+	EndGlobalSection
+EndGlobal

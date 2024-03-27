@@ -1,0 +1,31 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <div class="w-25">
+        <div class="bg-danger">
+            @{
+                if (!string.IsNullOrEmpty(ViewData["Error"] as string))
+                {
+                    <p>@ViewData["Error"]</p>
+                }
+            }            
+        </div>
+        <form method="post">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" asp-for="Account.Email" class="form-control" id="email" placeholder="Enter your email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" asp-for="Account.Password" class="form-control" id="password" placeholder="Enter your password" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+    
+</div>
